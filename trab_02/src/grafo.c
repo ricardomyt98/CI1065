@@ -168,6 +168,7 @@ bool have_letter(char *line)
     return false;
 }
 
+// Function to check vertices with odd degrees.
 void add_odd_degree_vertices_in_the_graph(grafo g)
 {
     for (int i = 0; i < g->numVertices; i++)
@@ -472,6 +473,7 @@ vertice *closed_eulerian_trail(grafo g, vertice r, int *trailSize)
     return trail;
 }
 
+// Function to split a trail.
 int split_closed_eulerian_trail(vertice *trailResult, int trailSize, vertice origin, vertice ***cobertura, int coberturaSize)
 {
     int numTrails = 1, subTrailSize = 0, i = coberturaSize; // Have at least one trail (numTrails).
@@ -519,6 +521,7 @@ int split_closed_eulerian_trail(vertice *trailResult, int trailSize, vertice ori
     return numTrails;
 }
 
+// Function to return the minimum number of trails needed to cover the entire graph.
 unsigned int cobertura_por_trilhas(grafo g, vertice **cobertura[])
 {
     int trailSize;
@@ -571,15 +574,5 @@ int main()
 
     printf("%i\n", numTrails);
 
-    for (int i = 0; cobertura[i]; i++)
-    {
-        for (int k = 0; cobertura[i][k]; k++)
-        {
-            printf("%s, ", cobertura[i][k]->name);
-        }
-        printf("\n");
-    }
-
-    escreve_grafo(output, g);
     destroi_grafo(g);
 }
