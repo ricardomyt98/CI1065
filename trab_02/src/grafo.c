@@ -8,14 +8,37 @@
 #define VERTICE_NEIGHBOR_SIZE 50
 #define MAX_LINE_LENGTH 2048
 
+// Function signatures.
+void destroy_vertice(vertice v);
+vertice create_vertice(char *name);
+grafo create_graph(void);
+vertice search_or_create_vertice(grafo g, char *name);
+bool is_neighbor(vertice target, vertice neighbor);
+void add_neighbor(vertice target, vertice neighbor);
+void link_vertices(grafo g, char *a, char *b);
+bool have_letter(char *line);
+void add_odd_degree_vertices_in_the_graph(grafo g);
+void visit_graph_vertices(FILE *output, vertice v);
+void set_vertice_processed_as_false(grafo g);
+void remove_neighbor(vertice target, vertice neighbor);
+void unlink_vertices(grafo g, vertice a, vertice b);
+bool found_cycle(vertice *cycle, vertice v, vertice caller, vertice origin, int *cycleSize);
+vertice *real_cycle(vertice *cycle, int *cycleSize);
+vertice *find_cycle_depth_first_search(vertice v, grafo g, int *cycleSize);
+void merge_cycle_to_trail(vertice *trail, int *trailSize, vertice *cycle, int *cycleSize, int trailIndex);
+vertice *closed_eulerian_trail(grafo g, vertice r, int *trailSize);
+int split_closed_eulerian_trail(vertice *trailResult, int trailSize, vertice origin, vertice ***cobertura, int coberturaSize);
+
 // Vertice structure.
 typedef struct _vertice
 {
     char *name;
     struct _vertice **neighbors;
     bool processed;
+    char wafflingVariableA[7];
     int numNeighbors;
     int allocatedNeighbors;
+    char wafflingVariableB[8];
 } * vertice;
 
 // Graph structure.
@@ -28,8 +51,10 @@ typedef struct _grafo
     int numOddDegreeVertices;
     int allocatedOddDegreeVertices;
     int numEdges;
+    char wafflingVariableA[4];
 } * grafo;
 
+// Function to destroy a vertice.
 void destroy_vertice(vertice v)
 {
     free(v->neighbors);
@@ -71,7 +96,7 @@ vertice create_vertice(char *name)
 }
 
 // Function to initialize a graph struct.
-grafo create_graph()
+grafo create_graph(void)
 {
     grafo g = (grafo)malloc(sizeof(struct _grafo));
 
@@ -97,12 +122,12 @@ vertice search_or_create_vertice(grafo g, char *name)
         }
     }
 
-    vertice newVertice = create_vertice(name);
+    vertice newVertice = create_vertice((char *)(unsigned long)name);
 
     if (g->numVertices == g->allocatedVertices)
     {
         g->allocatedVertices <<= 1;
-        g->vertices = realloc(g->vertices, g->allocatedVertices * sizeof(struct _vertice));
+        g->vertices = realloc(g->vertices, (long unsigned int)g->allocatedVertices * sizeof(struct _vertice));
     }
 
     g->vertices[g->numVertices++] = newVertice;
@@ -130,7 +155,7 @@ void add_neighbor(vertice target, vertice neighbor)
     if (target->numNeighbors == target->allocatedNeighbors)
     {
         target->allocatedNeighbors <<= 1; // Square of the number of neighbors allocated.
-        target->neighbors = realloc(target->neighbors, target->allocatedNeighbors * sizeof(struct _vertice));
+        target->neighbors = realloc(target->neighbors, (long unsigned int)target->allocatedNeighbors * sizeof(struct _vertice));
     }
 
     target->neighbors[target->numNeighbors++] = neighbor;
@@ -178,7 +203,7 @@ void add_odd_degree_vertices_in_the_graph(grafo g)
             if (g->numOddDegreeVertices == g->allocatedOddDegreeVertices)
             {
                 g->allocatedOddDegreeVertices <<= 1;
-                g->oddDegreeVertices = realloc(g->oddDegreeVertices, g->allocatedOddDegreeVertices * sizeof(struct _vertice));
+                g->oddDegreeVertices = realloc(g->oddDegreeVertices, (long unsigned int)g->allocatedOddDegreeVertices * sizeof(struct _vertice));
             }
 
             g->oddDegreeVertices[g->numOddDegreeVertices++] = g->vertices[i];
@@ -291,13 +316,13 @@ grafo escreve_grafo(FILE *output, grafo g)
 // Returns the number of vertices of a graph.
 unsigned int n_vertices(grafo g)
 {
-    return g->numVertices;
+    return (unsigned int)g->numVertices;
 }
 
 // Returns the number of edges of a graph.
 unsigned int n_arestas(grafo g)
 {
-    return g->numEdges;
+    return (unsigned int)g->numEdges;
 }
 
 // Returns a vertice searched for in a graph by a given string.
@@ -378,7 +403,7 @@ bool found_cycle(vertice *cycle, vertice v, vertice caller, vertice origin, int 
 vertice *real_cycle(vertice *cycle, int *cycleSize)
 {
     int j = *cycleSize - 2, k = 0;
-    vertice *cycleResult = malloc((*cycleSize) * sizeof(vertice));
+    vertice *cycleResult = malloc((long unsigned int)(*cycleSize) * sizeof(vertice));
 
     cycleResult[k++] = cycle[*cycleSize - 1]; // Put the first vertice in the final cycle.
 
@@ -400,7 +425,7 @@ vertice *find_cycle_depth_first_search(vertice v, grafo g, int *cycleSize)
     set_vertice_processed_as_false(g);
 
     *cycleSize = 0;
-    vertice *cycle = (vertice *)malloc((g->numEdges + 1) * sizeof(vertice));
+    vertice *cycle = (vertice *)malloc(((long unsigned int)g->numEdges + 1) * sizeof(vertice));
     cycle[*cycleSize] = v;
     (*cycleSize)++;
     v->processed = true;
@@ -440,7 +465,7 @@ void merge_cycle_to_trail(vertice *trail, int *trailSize, vertice *cycle, int *c
 // Function to return a trail.
 vertice *closed_eulerian_trail(grafo g, vertice r, int *trailSize)
 {
-    vertice *trail = malloc(g->numEdges * sizeof(vertice)); // A trail with the maximum number of possible positions (number of edges).
+    vertice *trail = malloc((long unsigned int)g->numEdges * sizeof(vertice)); // A trail with the maximum number of possible positions (number of edges).
 
     int i = 0, cycleSize;
     trail[0] = r; // Insert the root vertice in the first position of the trail.
@@ -486,7 +511,7 @@ int split_closed_eulerian_trail(vertice *trailResult, int trailSize, vertice ori
         }
     }
 
-    *cobertura = calloc((numTrails + 1), sizeof(vertice **)); // numTrails+1 -> sentinel (NULL).
+    *cobertura = calloc(((long unsigned int)numTrails + 1), sizeof(vertice **)); // numTrails+1 -> sentinel (NULL).
 
     for (int j = 1; j < trailSize - 1; j++) // Allocate subtrails.
     {
@@ -496,11 +521,11 @@ int split_closed_eulerian_trail(vertice *trailResult, int trailSize, vertice ori
         }
         else
         {
-            (*cobertura)[i++] = calloc((subTrailSize + 1), sizeof(vertice *)); // subTrailSize + 1 -> sentinel (NULL)
+            (*cobertura)[i++] = calloc(((long unsigned int)subTrailSize + 1), sizeof(vertice *)); // subTrailSize + 1 -> sentinel (NULL)
             subTrailSize = 0;
         }
     }
-    (*cobertura)[i++] = calloc((subTrailSize + 1), sizeof(vertice *)); // subTrailSize + 1 -> sentinel (NULL)
+    (*cobertura)[i++] = calloc(((long unsigned int)subTrailSize + 1), sizeof(vertice *)); // subTrailSize + 1 -> sentinel (NULL)
     subTrailSize = 0;
 
     i = coberturaSize; // reset
@@ -525,8 +550,8 @@ int split_closed_eulerian_trail(vertice *trailResult, int trailSize, vertice ori
 unsigned int cobertura_por_trilhas(grafo g, vertice **cobertura[])
 {
     int trailSize;
-    vertice *trailResult, tempV = search_or_create_vertice(g, "tempV"); // A temporary vertice.
-    unsigned int numTrails = 0;
+    vertice *trailResult, tempV = search_or_create_vertice(g, (char *)(unsigned long)"tempV"); // A temporary vertice.
+    int numTrails = 0;
     (*cobertura) = NULL;
 
     if (g->numOddDegreeVertices != 0)
@@ -536,7 +561,7 @@ unsigned int cobertura_por_trilhas(grafo g, vertice **cobertura[])
             link_vertices(g, tempV->name, g->oddDegreeVertices[i]->name);
         }
         trailResult = closed_eulerian_trail(g, tempV, &trailSize);
-        numTrails += (unsigned int)split_closed_eulerian_trail(trailResult, trailSize, tempV, cobertura, numTrails);
+        numTrails += split_closed_eulerian_trail(trailResult, trailSize, tempV, cobertura, numTrails);
         free(trailResult);
     }
 
@@ -547,8 +572,8 @@ unsigned int cobertura_por_trilhas(grafo g, vertice **cobertura[])
             trailSize = 0;
             trailResult = closed_eulerian_trail(g, g->vertices[i], &trailSize);
 
-            (*cobertura) = realloc((*cobertura), (numTrails + 2) * sizeof(vertice **));
-            (*cobertura)[numTrails] = calloc(trailSize + 1, sizeof(vertice *));
+            (*cobertura) = realloc((*cobertura), ((long unsigned int)numTrails + 2) * sizeof(vertice **));
+            (*cobertura)[numTrails] = calloc((long unsigned int)trailSize + 1, sizeof(vertice *));
             (*cobertura)[numTrails + 1] = NULL;
 
             for (int k = 0; k < trailSize; k++)
@@ -560,19 +585,15 @@ unsigned int cobertura_por_trilhas(grafo g, vertice **cobertura[])
         }
     }
 
-    return numTrails;
+    return (unsigned int)numTrails;
 }
 
 // The main function.
-int main()
+int main(void)
 {
-    FILE *output = fopen("output.txt", "w");
     grafo g = le_grafo(stdin);
     vertice **cobertura;
 
-    unsigned int numTrails = cobertura_por_trilhas(g, &cobertura);
-
-    printf("%i\n", numTrails);
-
+    printf("O número mínimo de trilhas necessárias para cobrir o grafo é: %i\n", cobertura_por_trilhas(g, &cobertura));
     destroi_grafo(g);
 }
